@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>Quic_on_dash</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	=======================<br>
+	== <a href="http://kevinrsx.github.io/">Blog | Emulbasaka</a> ==<br>
+	=======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+			<a href="/"><b>Start</b></a>.
+			
+			
+			<a href="/posts/"><b>Posts</b></a>.
+			
+			<a href="/categories/"><b>Categories</b></a>.
+			
+			<a href="/tags/"><b>Tags</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>Quic_on_dash</h1>
+			<b><time>28.10.2019 00:00</time></b>
+		       
+
+			<div>
+				<p>This post goes through streaming MPEG-DASH videos over Google&rsquo;s standalone QUIC client and client.</p>
+<h2 id="introduction">Introduction</h2>
+<p>QUIC, Quick UDP Internet Connection, is a transport protocol recently <a href="https://www.chromium.org/quic">developed by Google</a> and <a href="https://tools.ietf.org/html/draft-ietf-quic-http-23">standardized by IETF</a>. This protocol is established over UDP and it integrates TLS. HTTP/3, the application layer protocol of next generation, will use QUIC as its underlying transport layer protocol.</p>
+<p>DASH is an HTTP-based adaptive bitrate streaming (ABR) implementation. MPEG is a video codec that uses a <code>manifest.mpd</code> file to store the location of chunks of different bitrates.</p>
+<p>Streaming MPEG-DASH videos over QUIC is an important testbed for many measurements. For example, efficiency of video streaming over QUIC and performance of any specific part in QUIC protocol stack with video streaming as the application.</p>
+<h2 id="system-design-choice">System Design Choice</h2>
+<h3 id="client">Client</h3>
+<p>We use [dash.js] (<a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">https://github.com/Dash-Industry-Forum/dash.js/wiki</a>) as the client of this test. <code>dash.js</code> is a Javascript implementation of MPEG-DASH. It implements different ABR algorithms that requests video chunks of different bitrates based on information such as throughput and buffer size. An interface of video player is provided by <code>dash.js</code>  to faciliate video streaming.</p>
+<p><code>dash.js</code> can be easily used in html by adding a few tags and making a few function calls. To really make the request (calling <code>dash.js</code>&rsquo;s ABR algorithm), we need google chrome, which supports QUIC and is able to call Javascript functions. In summary, we use chrome to request <code>index.html</code> that uses the functions of <code>dash.js</code>.</p>
+<h3 id="server">Server</h3>
+<p>Requirements of server are much simpler:</p>
+<ul>
+<li>Server needs to support QUIC whose version is compatible with latest google chrome&rsquo;s QUIC&rsquo;s version</li>
+<li>Server should serve a folder that has <code>index.html</code> and Javscript files of <code>dash.js</code> mentioned in last section</li>
+</ul>
+<p>Our choice is the <a href="https://www.chromium.org/quic/playing-with-quic">toy quic server</a> provided by chromium project.</p>
+<h2 id="servers-setup">Server&rsquo;s Setup</h2>
+<p><em>Note: All the following tests are performed on Ubuntu 18.04</em></p>
+<h3 id="running-examples">Running Examples</h3>
+<ol>
+<li>
+<p><a href="https://www.chromium.org/developers/how-tos/get-the-code">Checkout the chromium source</a></p>
+</li>
+<li>
+<p>Follow the steps in <a href="https://www.chromium.org/quic/playing-with-quic">playing with quic</a> to test whether your toy client and server work fine. Note that you should generate certificates after preparing test data. Since this is QUIC requires a root CA certificate, use the following command to trust the generated certificate. If you encounter any certificate problem, add <code>--disable_certificate_verification</code> flag on client side.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>certutil -d sql:$HOME/.pki/nssdb -A -t <span style="color:#e6db74">&#34;C,,&#34;</span> -n &lt;certificate nickname&gt; <span style="color:#ae81ff">\ </span>
+</span></span><span style="display:flex;"><span>-i &lt;certificate filename&gt;
+</span></span></code></pre></div></li>
+</ol>
+<h3 id="importance-of-having-correct-headers">Importance of Having Correct Headers</h3>
+<p>The above steps are just tests for whether <code>quic_server</code> is good enough for our server. We will gradually change the content to be served to our files. One important thing is that <code>quic_server</code> is actually a proxy server. This means the server requires some elements to be cached in each files, otherwise it cannot process the files properly. In our case it should be the HTTP headers. In the example of using <code>www.example.org</code>, the headers are:</p>
+<pre tabindex="0"><code>HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: max-age=604800
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 28 Oct 2019 08:33:19 GMT
+Etag: &#34;3147526947&#34;
+Expires: Mon, 04 Nov 2019 08:33:19 GMT
+Last-Modified: Thu, 17 Oct 2019 07:18:26 GMT
+Server: ECS (oxr/831E)
+Vary: Accept-Encoding
+X-Cache: HIT
+X-Original-Url: https://www.example.org/
+Content-Length: 1256
+</code></pre><p>We must add <code>X-Original-Url</code> to match with clients request:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./out/Debug/quic_client --host<span style="color:#f92672">=</span>127.0.0.1 --port<span style="color:#f92672">=</span><span style="color:#ae81ff">6121</span> https://www.example.org/
+</span></span></code></pre></div><p>Server identifies this request, match the file that has <code>X-Original-Url</code> of the same name, and returns corresponding files.</p>
+<h3 id="generate-headers">Generate Headers</h3>
+<p>At this point, we know that all videos, <code>index.html</code>,  <code>dash.js</code>, <code>manifest.mpd</code> and all video files should be associate with appropriate headers. We can arrange our folder to be served, say <code>www.quictest.com</code> like this:</p>
+<pre tabindex="0"><code>www.quictest.com/
+|----index.html
+|----dash.all.min.js
+|----video/
+     |----Manifest.mpd
+     |----video1/
+     |----video2/
+     |----video3/
+     |----video4/
+     |----video5/
+     |----video6/
+</code></pre><p>To associate headers to files, we need to actually serve it with other web server (could be without QUIC support but does not <code>X-Original-Url</code>) first. Here we choose <a href="https://caddyserver.com/v1/">Caddy web server</a>. After serving the same folder, we can write a script to download all the files in the folder and add <code>X-Original-Url</code> to them.</p>
+<h3 id="using-the-server">Using the Server</h3>
+<p>As soon as the headers are correct, we can fire up the server:</p>
+<pre tabindex="0"><code>./out/Debug/quic_server \
+  --quic_response_cache_dir=/tmp/quic-data/www.quictest.com \
+  --certificate_file=net/tools/quic/certs/out/leaf_cert.pem \
+  --key_file=net/tools/quic/certs/out/leaf_cert.pkcs8
+</code></pre><p>Note that here the name of <code>quic_response_cache_dir</code> is <code>www.quictest.com</code>. You need to let the browser trust this host name. Therefore, before using the server, you should re-generate the certificate by adding</p>
+<pre tabindex="0"><code>DNS.4 = www.quictest.com
+</code></pre><p>to <code>[other_hosts]</code> section in <code>net/tools/quic/certs/leaf.cnf</code>. To have a clearer look at how the server is running, use <code>--v=1</code> at server side to enable verbose.</p>
+<h2 id="clients-setup">Client&rsquo;s Setup</h2>
+<p>Actually you only need to open google chrome to let client work. First close the current google chrome browser you are running, then</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>google-chrome-stable <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --no-proxy-server <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --enable-quic <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --origin-to-force-quic-on<span style="color:#f92672">=</span>www.quictest.com:443 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --host-resolver-rules<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;MAP www.quictest.com:443 127.0.0.1:6121&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  https://www.quictest.com
+</span></span></code></pre></div><p>Note that these flags map every request to <code>www.quictest.com:443</code> to your <code>quic_server</code>.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.chromium.org/quic/playing-with-quic">Playing with quic</a></li>
+<li><a href="https://chromium.googlesource.com/chromium/src/+/master/docs/linux_cert_management.md">Linux certificate management</a></li>
+<li><a href="https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/2nyLYC6JTBo">Streaming via quic</a></li>
+<li><a href="https://www.chromium.org/developers/how-tos/get-the-code">Get the Code: Checkout, Build, &amp; Run Chromium</a></li>
+<li>The documentation of more specific process of getting the whole thing done by Yuhao. Currently in a private repository</li>
+<li>Yuhao&rsquo;s efficient script</li>
+</ul>
+
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/posts/2022-05-01-hello/">Hello</a></li>
+				
+				<li><a href="/posts/2021-02-01-system-calls/">System Calls</a></li>
+				
+				<li><a href="/posts/quic_on_dash/">Quic_on_dash</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="http://kevinrsx.github.io/"><b>Blog | Emulbasaka</b></a>.
+	<a href="https://github.com/example"><b>Github</b></a>.
+	<a href="https://kevinrsx.github.io/"><b>Kevin</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>

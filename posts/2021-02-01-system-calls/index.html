@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>System Calls</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	=======================<br>
+	== <a href="http://kevinrsx.github.io/">Blog | Emulbasaka</a> ==<br>
+	=======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+			<a href="/"><b>Start</b></a>.
+			
+			
+			<a href="/posts/"><b>Posts</b></a>.
+			
+			<a href="/categories/"><b>Categories</b></a>.
+			
+			<a href="/tags/"><b>Tags</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>System Calls</h1>
+			<b><time>01.02.2021 14:13</time></b>
+		       
+		           <a href="/tags/default">default</a>
+        	       
+
+			<div>
+				<p>References:</p>
+<ul>
+<li>
+<p><a href="https://elixir.bootlin.com/linux/v5.4/source">Linux source code v5.4</a></p>
+</li>
+<li>
+<p><em><a href="http://pearsonhighered.com/educator/product/Linux-Kernel-Development/9780672329463.page">Linux Kernel Development <strong>(3rd Edition)</strong></a></em>, Robert Love, Addison-Wesley Professional, New York, NY, 2010 (available from <a href="http://www.amazon.com/exec/obidos/ASIN/0672329468/departmeofcom-20">Amazon.com</a>). Also available [online](<a href="http://www.staroceans.org/kernel-and-driver/Pearson.Education-Linux.Kernel.Development-A.thorough.guide.to.the.design.and.implementation.of.the.Linux.kernel.by.Robert.Love">http://www.staroceans.org/kernel-and-driver/Pearson.Education-Linux.Kernel.Development-A.thorough.guide.to.the.design.and.implementation.of.the.Linux.kernel.by.Robert.Love</a>, 3rd.Edition_2010.pdf).</p>
+</li>
+</ul>
+<p>Attention: The kernel version in this article is 5.4, which is different from the one in <em>Linux Kernel Development</em> and the one that readers may use.</p>
+<h2 id="definition">Definition</h2>
+<p>Access point is a macro <code>SYSCALL_DEFINEx</code>. There are <a href="https://elixir.bootlin.com/linux/v5.4/source/include/linux/syscalls.h#L207">generic version</a> and <a href="https://elixir.bootlin.com/linux/v5.4/source/arch/x86/include/asm/syscall_wrapper.h#L184">hardware-specific version (x86)</a></p>
+<p>For example, the generic version of <code>getpid()</code> is defined like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>asmlinkage <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">sys_getpid</span>(<span style="color:#66d9ef">void</span>);
+</span></span></code></pre></div><ul>
+<li><code>asmlinkage</code>: required modifier that asks the compiler to look only on the stack for this function&rsquo;s arguments (72)</li>
+<li><code>long</code>: for compatibility between 32- and 64-bit systems, returns <code>long</code> in kernel and <code>int</code> in user space</li>
+<li><code>sys_getpid</code>: naming convention -  <code>sys_foo</code>, <code>sys_bar</code>.</li>
+</ul>
+<h2 id="x86_64-system-call-handler-example">X86_64 System Call Handler Example</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>fix_processor_context()<span style="color:#f92672">-&gt;</span>sycall_init() <span style="color:#f92672">-&gt;</span> entry_SYSCALL_64 <span style="color:#f92672">-&gt;</span> do_syscall_64()
+</span></span></code></pre></div><p><code>do_syscall_64()</code> is defined in <code>/arch/x86/entry/common.c</code>. It uses the <code>sys_call_table</code> to invoke an actual system call</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>regs<span style="color:#f92672">-&gt;</span>ax <span style="color:#f92672">=</span> sys_call_table[nr](regs);
+</span></span></code></pre></div><p>Definition of system call table (an array of function pointers):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>asmlinkage <span style="color:#66d9ef">const</span> sys_call_ptr_t sys_call_table[__NR_syscall_max<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 * Smells like a compiler bug -- it doesn&#39;t work
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 * when the &amp; below is removed.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 */</span>
+</span></span><span style="display:flex;"><span>	[<span style="color:#ae81ff">0</span> ... __NR_syscall_max] <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>sys_ni_syscall,
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;asm/syscalls_64.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span></code></pre></div><p>and <code>__x64_sys_foo()</code> is called.</p>
+<p>The x86_64 system call table is in <a href="https://elixir.bootlin.com/linux/v5.4/source/arch/x86/entry/syscalls/syscall_64.tbl"><code>arch/x86/entry/syscalls/syscall_64.tbl</code></a>. <code>syscalls_64.h</code> is generated by this table at compile time:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span>out <span style="color:#f92672">:=</span> arch/<span style="color:#66d9ef">$(</span>SRCARCH<span style="color:#66d9ef">)</span>/include/generated/asm
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#################################################################
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">$(out)/xen-hypercalls.h</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/include/xen/interface/xen*.h
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>uapisyshdr-y			<span style="color:#f92672">+=</span> unistd_32.h unistd_64.h unistd_x32.h
+</span></span><span style="display:flex;"><span>syshdr-y			<span style="color:#f92672">+=</span> syscalls_32.h
+</span></span><span style="display:flex;"><span>syshdr-$(CONFIG_X86_64)		<span style="color:#f92672">+=</span> unistd_32_ia32.h unistd_64_x32.h
+</span></span><span style="display:flex;"><span>syshdr-$(CONFIG_X86_64)		<span style="color:#f92672">+=</span> syscalls_64.h
+</span></span><span style="display:flex;"><span>syshdr-$(CONFIG_XEN)		<span style="color:#f92672">+=</span> xen-hypercalls.h
+</span></span></code></pre></div><p><a href="https://blog.packagecloud.io/eng/2016/04/05/the-definitive-guide-to-linux-system-calls/#64-bit-fast-system-calls">Here</a> is a detailed explanation of 64-bit fast system calls, but note the kernel version is older.</p>
+<h2 id="implementation-of-a-system-call">Implementation of a System Call</h2>
+<p>Before adding a system call, you should follow these <a href="https://www.kernel.org/doc/html/latest/process/adding-syscalls.html">principles</a> (unless you are doing a school assignment).</p>
+<h3 id="verifying-parameters">Verifying Parameters</h3>
+<p>Pointers may be malicious. Do the following checking:</p>
+<ul>
+<li>Pointer points to user space</li>
+<li>Pointer points to the process&rsquo;s address space</li>
+<li>The memory pointed to is readable</li>
+</ul>
+<p>Use <code>copy_to_user()</code> and <code>copy_from_user()</code>. If they fail, return <code>-EFAULT</code></p>
+<p>Note: the LKD example (77) has some problems in defining <code>len</code>. Look at some actual code examples to see the usage of these two functions.<!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="adding-a-generic-system-call-in-x86_64">Adding a Generic System Call in x86_64</h3>
+<p>Note: the title is not conflicting itself. A system call can be targeted at different architectures but only implemented in one of them.</p>
+<ul>
+<li>Add an entry in <code>arch/x86/entry/syscalls/sys_call_64.tbl</code></li>
+<li>Put function header in <code>include/linux/syscalls.h</code></li>
+<li>System call functions should be implemented in <code>kernel/</code></li>
+</ul>
+
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/posts/2022-05-01-hello/">Hello</a></li>
+				
+				<li><a href="/posts/2021-02-01-system-calls/">System Calls</a></li>
+				
+				<li><a href="/posts/quic_on_dash/">Quic_on_dash</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="http://kevinrsx.github.io/"><b>Blog | Emulbasaka</b></a>.
+	<a href="https://github.com/example"><b>Github</b></a>.
+	<a href="https://kevinrsx.github.io/"><b>Kevin</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>
