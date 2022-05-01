@@ -2,27 +2,27 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog | Emulbasaka</title>
-    <link>http://kevinrsx.github.io/</link>
+    <link>http://kevinrsx.github.io/blog/</link>
     <description>Recent content on Blog | Emulbasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 01 May 2022 13:29:27 -0400</lastBuildDate><atom:link href="http://kevinrsx.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 01 May 2022 13:29:27 -0400</lastBuildDate><atom:link href="http://kevinrsx.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Hello</title>
-      <link>http://kevinrsx.github.io/posts/2022-05-01-hello/</link>
+      <link>http://kevinrsx.github.io/blog/posts/2022-05-01-hello/</link>
       <pubDate>Sun, 01 May 2022 13:29:27 -0400</pubDate>
       
-      <guid>http://kevinrsx.github.io/posts/2022-05-01-hello/</guid>
+      <guid>http://kevinrsx.github.io/blog/posts/2022-05-01-hello/</guid>
       <description>Test the theme
 H2 H3 int main(void) {  printf(&amp;#34;hello\n&amp;#34;); } </description>
     </item>
     
     <item>
       <title>System Calls</title>
-      <link>http://kevinrsx.github.io/posts/2021-02-01-system-calls/</link>
+      <link>http://kevinrsx.github.io/blog/posts/2021-02-01-system-calls/</link>
       <pubDate>Mon, 01 Feb 2021 14:13:13 -0400</pubDate>
       
-      <guid>http://kevinrsx.github.io/posts/2021-02-01-system-calls/</guid>
+      <guid>http://kevinrsx.github.io/blog/posts/2021-02-01-system-calls/</guid>
       <description>References:
   Linux source code v5.4
   Linux Kernel Development (3rd Edition), Robert Love, Addison-Wesley Professional, New York, NY, 2010 (available from Amazon.com). Also available [online](http://www.staroceans.org/kernel-and-driver/Pearson.Education-Linux.Kernel.Development-A.thorough.guide.to.the.design.and.implementation.of.the.Linux.kernel.by.Robert.Love, 3rd.Edition_2010.pdf).
@@ -32,10 +32,10 @@ Definition Access point is a macro SYSCALL_DEFINEx. There are generic version an
     
     <item>
       <title>Quic_on_dash</title>
-      <link>http://kevinrsx.github.io/posts/quic_on_dash/</link>
+      <link>http://kevinrsx.github.io/blog/posts/quic_on_dash/</link>
       <pubDate>Mon, 28 Oct 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://kevinrsx.github.io/posts/quic_on_dash/</guid>
+      <guid>http://kevinrsx.github.io/blog/posts/quic_on_dash/</guid>
       <description>This post goes through streaming MPEG-DASH videos over Google&amp;rsquo;s standalone QUIC client and client.
 Introduction QUIC, Quick UDP Internet Connection, is a transport protocol recently developed by Google and standardized by IETF. This protocol is established over UDP and it integrates TLS. HTTP/3, the application layer protocol of next generation, will use QUIC as its underlying transport layer protocol.
 DASH is an HTTP-based adaptive bitrate streaming (ABR) implementation. MPEG is a video codec that uses a manifest.</description>
