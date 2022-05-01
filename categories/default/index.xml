@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>default on Blog | Emulbasaka</title>
+    <link>http://kevinrsx.github.io/blog/categories/default/</link>
+    <description>Recent content in default on Blog | Emulbasaka</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 01 May 2022 13:29:27 -0400</lastBuildDate><atom:link href="http://kevinrsx.github.io/blog/categories/default/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello</title>
+      <link>http://kevinrsx.github.io/blog/posts/2022-05-01-hello/</link>
+      <pubDate>Sun, 01 May 2022 13:29:27 -0400</pubDate>
+      
+      <guid>http://kevinrsx.github.io/blog/posts/2022-05-01-hello/</guid>
+      <description>Test the theme
+H2 H3 int main(void) {  printf(&amp;#34;hello\n&amp;#34;); } </description>
+    </item>
+    
+  </channel>
+</rss>
