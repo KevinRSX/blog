@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>2-D Array vs. Pointer to Pointer in C</title>
+	
+	
+	<link rel="stylesheet" href="/blog/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	=======================<br>
+	== <a href="http://kevinrsx.github.io/blog">Blog | Emulbasaka</a> ==<br>
+	=======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+		<a href="/blog/"><b>Start</b></a>.
+			
+			
+			<a href="http://kevinrsx.github.io/blog/posts/"><b>Posts</b></a>.
+			
+			<a href="http://kevinrsx.github.io/blog/categories/"><b>Categories</b></a>.
+			
+			<a href="http://kevinrsx.github.io/blog/tags/"><b>Tags</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>2-D Array vs. Pointer to Pointer in C</h1>
+			<b><time>26.06.2022 12:33</time></b>
+		       
+		           <a href="/blog/tags/c">C</a>
+        	       
+
+			<div>
+				<p>Test your understanding of pointers: explain the output of the below C program.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> v {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> z[<span style="color:#ae81ff">10</span>][<span style="color:#ae81ff">10</span>];
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> v_alloc {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>z;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> v v1;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> v_alloc v2;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>z1 <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)v1.z;
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;z1: &#34;</span>, z1);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;z1[0]: &#34;</span>, z1[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;v1.z: &#34;</span>, v1.z);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;&amp;v1.z: &#34;</span>, <span style="color:#f92672">&amp;</span>v1.z);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;v1.z[0]: &#34;</span>, v1.z[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	v2.z <span style="color:#f92672">=</span> malloc(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>));
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">10</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>		v2.z[i] <span style="color:#f92672">=</span> malloc(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>z2 <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)v2.z;
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;z2: &#34;</span>, z2);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;z2[0]: &#34;</span>, z2[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;z2[1]: &#34;</span>, z2[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;v2.z: &#34;</span>, v2.z);
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;%-16s%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;v2.z[0]: &#34;</span>, v2.z[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">sizeof(int): %lu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>	printf(<span style="color:#e6db74">&#34;sizeof(int *): %lu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Example Output:</p>
+<pre tabindex="0"><code>z1:             0x1020a4000
+z1[0]:          0x0
+v1.z:           0x1020a4000
+&amp;v1.z:          0x1020a4000
+v1.z[0]:        0x1020a4000
+
+z2:             0x6000010d0d20
+z2[0]:          0x600003dd0270
+z2[1]:          0x600003dd02a0
+v2.z:           0x6000010d0d20
+v2.z[0]:        0x600003dd0270
+
+sizeof(int): 4
+sizeof(int *): 8
+</code></pre><p>AP TAs: consider this when you&rsquo;re writing Midterm 1! You can for example let students fill in <code>&amp;v1.z</code> and <code>v1.z[0]</code> given the value of <code>v1.z</code> and ask them to reason why <code>z2</code> is different.</p>
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/blog/posts/2022-06-26-td-pointer/">2-D Array vs. Pointer to Pointer in C</a></li>
+				
+				<li><a href="/blog/posts/2022-05-01-hello/">Hello</a></li>
+				
+				<li><a href="/blog/posts/2021-02-01-system-calls/">System Calls</a></li>
+				
+				<li><a href="/blog/posts/quic_on_dash/">Quic_on_dash</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="http://kevinrsx.github.io/blog"><b>Blog | Emulbasaka</b></a>.
+	<a href="https://github.com/example"><b>Github</b></a>.
+	<a href="https://kevinrsx.github.io/"><b>Kevin</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>

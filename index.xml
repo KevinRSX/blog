@@ -6,7 +6,16 @@
     <description>Recent content on Blog | Emulbasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 01 May 2022 13:29:27 -0400</lastBuildDate><atom:link href="http://kevinrsx.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 26 Jun 2022 12:33:30 -0400</lastBuildDate><atom:link href="http://kevinrsx.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>2-D Array vs. Pointer to Pointer in C</title>
+      <link>http://kevinrsx.github.io/blog/posts/2022-06-26-td-pointer/</link>
+      <pubDate>Sun, 26 Jun 2022 12:33:30 -0400</pubDate>
+      
+      <guid>http://kevinrsx.github.io/blog/posts/2022-06-26-td-pointer/</guid>
+      <description>&lt;p&gt;Test your understanding of pointers: explain the output of the below C program.&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>Hello</title>
       <link>http://kevinrsx.github.io/blog/posts/2022-05-01-hello/</link>
